@@ -25,14 +25,11 @@ spec:
       script: |
         echo "Check if bar-auth-config ACE Configuration exists"
         EXISTS=`oc get configuration.appconnect.ibm.com -n $(params.namespace) | grep bar-auth-config | wc -l`
-        echo "XXXXXXXXXXXXXXXXXXX"
         if [[ $EXISTS -eq 1 ]]
         then
-          echo "YYYYYYYYYYYYYYYYYYY"
           echo "bar-auth-config ACE Configuration exists"
           echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
         else
-          echo "ZZZZZZZZZZZZZZZ"
           echo "bar-auth-config ACE Configuration does not exists"
           # echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
           echo "Installing openssl"
@@ -57,36 +54,36 @@ spec:
             tls.crt: ''
             tls.key: ''
           type: kubernetes.io/tls
-          EOF
+        EOF
+        
+          # Create JSON file with Artifactory credentials and CA certificate
+          # ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(params.artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -d`
+          ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
+
+          cat - > bar-auth.json << EOF
+          {
+            "authType":"BASIC_AUTH",
+            "credentials": {
+                "username":"admin",
+                "password":"${ARTIFACTORY_PASSWORD}",
+                "caCertSecret":"artifactory-cacert-secret"
+            }
+          }
+        EOF
+          # Create the secret containing the JSON
+          oc create secret generic bar-auth-secret --from-file=configuration=bar-auth.json --namespace=$(params.namespace)
+
+          cat <<EOF | oc apply -f -
+          apiVersion: appconnect.ibm.com/v1beta1
+          kind: Configuration
+          metadata:  
+            name: bar-auth-config  
+            namespace: $(params.namespace)
+          spec:  
+            description: Stores bar auth
+            secretName: bar-auth-secret
+            type: barauth
+        EOF
         fi
-          # # Create JSON file with Artifactory credentials and CA certificate
-          # # ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(params.artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -d`
-          # ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
-
-          # cat - > bar-auth.json << EOF
-          # {
-          #   "authType":"BASIC_AUTH",
-          #   "credentials": {
-          #       "username":"admin",
-          #       "password":"${ARTIFACTORY_PASSWORD}",
-          #       "caCertSecret":"artifactory-cacert-secret"
-          #   }
-          # }
-          # EOF
-          # # Create the secret containing the JSON
-          # oc create secret generic bar-auth-secret --from-file=configuration=bar-auth.json --namespace=$(params.namespace)
-
-          # cat <<EOF | oc apply -f -
-          # apiVersion: appconnect.ibm.com/v1beta1
-          # kind: Configuration
-          # metadata:  
-          #   name: bar-auth-config  
-          #   namespace: $(params.namespace)
-          # spec:  
-          #   description: Stores bar auth
-          #   secretName: bar-auth-secret
-          #   type: barauth
-          # EOF
-        # fi
         
         
