@@ -61,6 +61,7 @@ spec:
         # Create the secret containing the JSON
         oc create secret generic bar-auth-secret --from-file=configuration=bar-auth.json --namespace=$(params.namespace)
 
+        cat <<EOF | oc apply -f -
         apiVersion: appconnect.ibm.com/v1beta1
         kind: Configuration
         metadata:  
@@ -70,5 +71,6 @@ spec:
             description: Stores bar auth
             secretName: bar-auth-secret
             type: barauth
+        EOF
 
         oc get secret artifactory-access --namespace=$(params.artifactory-namespace) -o yaml | sed 's/namespace: .*/namespace: $(params.namespace)/' | oc apply -f -
