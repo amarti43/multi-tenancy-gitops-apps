@@ -38,10 +38,6 @@ spec:
       description: OpenShift namespace where Artifactory is installed
   workspaces:
     - name: workspace
-  # stepTemplate:
-  #   envFrom:
-  #     - secretRef:
-  #         name: artifactory-access
   steps:
     - image: $(params.oc-image)
       name: upload-bar
