@@ -51,9 +51,9 @@ spec:
         sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
         sed -i -e "s@https://@@g" upload-barfile-to-artifactory.sh
 
-        ARTIFACTORY_USER=`cat $(workspaces.workspace.path)/ARTIFACTORY_USER | tr -d '\n'`
-        ARTIFACTORY_PASSWORD=`cat $(workspaces.workspace.path)/ARTIFACTORY_PASSWORD | tr -d '\n'`
-        ARTIFACTORY_URL=`cat $(workspaces.workspace.path)/ARTIFACTORY_URL | tr -d '\n'`
+        ARTIFACTORY_USER=`cat $(workspaces.workspace.path)/ARTIFACTORY_USER; echo`
+        ARTIFACTORY_PASSWORD=`cat $(workspaces.workspace.path)/ARTIFACTORY_PASSWORD; echo`
+        ARTIFACTORY_URL=`cat $(workspaces.workspace.path)/ARTIFACTORY_URL; echo`
 
         echo "Calling upload-barfile-to-artifactory.sh ${ARTIFACTORY_URL}
         $(params.artifactory-repo) $(params.artifactory-basepath)
