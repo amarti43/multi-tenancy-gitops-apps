@@ -58,7 +58,7 @@ spec:
             tls.key: ''
           type: kubernetes.io/tls
           EOF
-
+        fi
           # # Create JSON file with Artifactory credentials and CA certificate
           # # ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(params.artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -d`
           # ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
@@ -87,6 +87,6 @@ spec:
           #   secretName: bar-auth-secret
           #   type: barauth
           # EOF
-        fi
+        # fi
         
         
