@@ -1,0 +1,37 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: check-artifactory-creds
+spec:
+  params:
+    - name: oc-image
+      type: string
+      default: quay.io/openshift/origin-cli:latest
+      description: OC CLI Docker image needed to upload ACE BAR files
+    - name: namespace
+      type: string
+      default: test
+      description: OpenShift namespace where the ACE Books application will be deployed to
+    - name: artifactory-namespace
+      type: string
+      default: tools
+      description: OpenShift namespace where artifactory is deployed to
+  results:
+    - name: creds-exists
+      description: Whether Artifactory credentials exists or not
+  steps:
+    - image: $(params.oc-image)
+      name: create-artifactory-creds
+      script: |
+        echo "Check if bar-auth-config ACE Configuration exists"
+        oc get configuration.appconnect.ibm.com bar-auth-config -n $(params.namespace)
+        if [[ $? -eq 0 ]]
+        then
+          echo "bar-auth-config ACE Configuration exists"
+          echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
+        else
+          echo "bar-auth-config ACE Configuration does not exists"
+          echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
+        fi
+        
+        

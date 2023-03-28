@@ -1,0 +1,47 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: git-checkout
+  annotations:
+    description: Checks out a Git repository
+  labels:
+    version: 0.0.1
+spec:
+  description: Checks out a Git repository
+  params:
+    - name: git-url
+      type: string
+      description: GitHub url to checkout.
+    - name: git-branch
+      type: string
+      default: main
+      description: Github branch for the pipeline scripts
+    - name: git-image
+      type: string
+      default: quay.io/ibmgaragecloud/alpine-git
+      description: Git Docker image needed for executing git commands.
+    - name: debug
+      type: string
+      default: "True"
+      description: Debug flag
+  workspaces:
+    - name: workspace
+  results:
+    - name: source-dest
+      description: Git Repository Source Destination
+  steps:
+    - name: git-clone
+      image: $(params.git-image)
+      workingDir: $(workspaces.workspace.path)
+      script: |
+        echo "********************"
+        echo "** Step git-clone **"
+        echo "********************"
+        echo
+        if [[ "$(params.debug)" == "True" ]]; then echo "DEBUG is enabled"; set -x; fi
+        git_repo_name=`echo $(params.git-url) | sed 's/.git//g' | tr '/' ' ' | awk '{print $NF}'`
+        git clone $(params.git-url) $git_repo_name
+        cd $git_repo_name
+        git checkout $(params.git-branch)
+        set +x
+        echo ${git_repo_name} | tr -d "\n" | tee $(results.source-dest.path)

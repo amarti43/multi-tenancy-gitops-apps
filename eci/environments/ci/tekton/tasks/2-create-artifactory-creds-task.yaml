@@ -1,0 +1,72 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-artifactory-creds
+spec:
+  params:
+    - name: oc-image
+      type: string
+      default: quay.io/openshift/origin-cli:latest
+      description: OC CLI Docker image needed to upload ACE BAR files
+    - name: namespace
+      type: string
+      default: test
+      description: OpenShift namespace where the ACE Books application will be deployed to
+    - name: artifactory-namespace
+      type: string
+      default: tools
+      description: OpenShift namespace where artifactory is deployed to
+  steps:
+    - image: $(params.oc-image)
+      name: create-artifactory-creds
+      script: |
+        echo "Installing openssl"
+        dnf install openssl -y
+        echo "openssl installed"
+        
+        echo "Getting CA certificate for Artifactory"
+        ARTIFACTORY_ENDPOINT=`oc get route artifactory -n $(artifactory-namespace) -o jsonpath='{.status.ingress[].host}'`
+        # Get certificates from artifactory endpoint
+        openssl s_client -showcerts -verify 5 -connect ${ARTIFACTORY_ENDPOINT}:443 < /dev/null | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/{ if(/BEGIN CERTIFICATE/){a++}; out="cert"a".pem"; print >out}'
+        # Base64 encode CA certificate
+        CA_ENCODED=`cat cert1.pem | base64 -w0`
+        # Create the secret
+        cat <<EOF | oc apply -f -
+        kind: Secret
+        apiVersion: v1
+        metadata:
+          name: artifactory-cacert-secret
+          namespace: $(params.namespace)
+        data:
+          ca.crt: '${CA_ENCODED}'
+          tls.crt: ''
+          tls.key: ''
+        type: kubernetes.io/tls
+        EOF
+
+        # Create JSON file with Artifactory credentials and CA certificate
+        ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -D`
+        cat - > bar-auth.json << EOF
+        {
+          "authType":"BASIC_AUTH",
+          "credentials": {
+              "username":"admin",
+              "password":"${ARTIFACTORY_PASSWORD}",
+              "caCertSecret":"artifactory-cacert-secret"
+          }
+        }
+        EOF
+        # Create the secret containing the JSON
+        oc create secret generic bar-auth-secret --from-file=configuration=bar-auth.json --namespace=$(params.namespace)
+
+        apiVersion: appconnect.ibm.com/v1beta1
+        kind: Configuration
+        metadata:  
+            name: bar-auth-config  
+            namespace: $(params.namespace)
+        spec:  
+            description: Stores bar auth
+            secretName: bar-auth-secret
+            type: barauth
+
+        oc get secret artifactory-access --namespace=$(artifactory-namespace) -o yaml | sed 's/namespace: .*/namespace: $(params.namespace)/' | oc apply -f -

@@ -1,0 +1,146 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ace-books-pipeline
+spec:
+  params:
+    - name: git-ace-books-app
+      type: string
+      default: 'https://github.com/jesusmah/cp4i-ace-books.git'
+      description: GitHub url for the ACE Books demo application
+    - name: git-ace-devops-utils
+      type: string
+      default: 'https://github.com/jesusmah/cp4i-devops-utils.git'
+      description: GitHub url for the ACE DevOps Demo Utils.
+    - name: app-name
+      type: string
+      default: "Books"
+      description: Application name
+    - name: namespace
+      type: string
+      default: "test"
+      description: OpenShift namespace where the ACE Books application will be deployed to
+    - name: debug
+      type: string
+      default: "True"
+      description: Debug flag
+  workspaces:
+  - name: shared-dir
+    description: This workspace is shared among all the pipeline tasks to read/write common resources
+  tasks:
+    - name: check-artifactory-creds
+      taskRef:
+        name: check-artifactory-creds
+      params:
+        - name: namespace
+          value: $(params.namespace)
+    - name: create-artifactory-creds
+      taskRef:
+        name: create-artifactory-creds
+      runAfter:
+        - check-artifactory-creds
+      when:
+          - input: "$(tasks.check-artifactory-creds.results.creds-exists)"
+            operator: in
+            values: ["false"]
+      params:
+        - name: namespace
+          value: $(params.namespace)
+    - name: generate-build-id
+      taskRef:
+        name: generate-build-id
+      runAfter:
+        - create-artifactory-creds
+    - name: git-checkout-ace-books-app
+      taskRef:
+        name: git-checkout
+      runAfter:
+        - generate-build-id
+      workspaces:
+        - name: workspace
+          workspace: shared-dir
+      params:
+        - name: git-url
+          value: "$(params.git-ace-books-app)"
+        # Debug flag
+        - name: debug
+          value: "$(params.debug)"
+    - name: git-checkout-ace-devops-utils
+      taskRef:
+        name: git-checkout
+      runAfter:
+        - git-checkout-ace-books-app
+      workspaces:
+        - name: workspace
+          workspace: shared-dir
+      params:
+        - name: git-url
+          value: "$(params.git-ace-devops-utils)"
+        # Debug flag
+        - name: debug
+          value: "$(params.debug)"
+    - name: build-bar-file
+      taskRef:
+        name: build-bar-file
+      runAfter:
+        - git-checkout-ace-devops-utils
+      workspaces:
+        - name: workspace
+          workspace: shared-dir
+      params:
+        - name: build-id
+          value: "$(tasks.generate-build-id.results.timestamp)"
+        - name: app-dir
+          value: "$(tasks.git-checkout-ace-books-app.results.source-dest)"
+        - name: app-name
+          value: "$(params.app-name)"
+    - name: upload-bar-file
+      taskRef:
+        name: upload-bar-file
+      runAfter:
+        - build-bar-file
+      workspaces:
+        - name: workspace
+          workspace: shared-dir
+      params:
+        - name: build-id
+          value: "$(tasks.generate-build-id.results.timestamp)"
+        - name: app-dir
+          value: "$(tasks.git-checkout-ace-books-app.results.source-dest)"
+        - name: utils-dir
+          value: "$(tasks.git-checkout-ace-devops-utils.results.source-dest)"
+        - name: app-name
+          value: "$(params.app-name)"
+        - name: artifactory-basepath
+          value: "$(context.pipeline.name)"
+    - name: deploy-is
+      taskRef:
+        name: deploy-is
+      runAfter:
+        - upload-bar-file
+      workspaces:
+        - name: workspace
+          workspace: shared-dir
+      params:
+        - name: build-id
+          value: "$(tasks.generate-build-id.results.timestamp)"
+        - name: app-dir
+          value: "$(tasks.git-checkout-ace-books-app.results.source-dest)"
+        - name: utils-dir
+          value: "$(tasks.git-checkout-ace-devops-utils.results.source-dest)"
+        - name: app-name
+          value: "$(params.app-name)"
+        - name: artifactory-basepath
+          value: "$(context.pipeline.name)"
+        - name: namespace
+          value: $(params.namespace)
+    - name: test-is
+      taskRef:
+        name: test-is
+      runAfter:
+        - deploy-is
+      params:
+        - name: app-name
+          value: "$(params.app-name)"
+        - name: namespace
+          value: $(params.namespace)

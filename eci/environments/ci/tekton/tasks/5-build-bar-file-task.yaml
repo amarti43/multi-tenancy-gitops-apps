@@ -1,0 +1,36 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: build-bar-file
+spec:
+  params:
+    - name: build-id
+      type: string
+      description: Build ID
+    - name: ace-image
+      type: string
+      default: image-registry.openshift-image-registry.svc:5000/jenkins/ace-buildbar:12.0.4.0-ubuntu
+      description: ACE Docker image needed to build ACE BAR files
+    - name: app-name
+      type: string
+      description: BAR file name
+    - name: app-dir
+      type: string
+      description: ACE application project directory
+  workspaces:
+    - name: workspace
+  steps:
+    - image: $(params.ace-image)
+      name: build-bar
+      workingDir: $(workspaces.workspace.path)
+      script: |
+        #!/bin/bash
+        Xvfb -ac :99 &
+        export DISPLAY=:99
+        export LICENSE=accept
+        pwd
+        source /opt/ibm/ace-12/server/bin/mqsiprofile
+        cd $(params.app-dir)
+        BAR_FILE="$(params.app-name)_$(params.build-id).bar"
+        mqsicreatebar -data . -b $BAR_FILE -a $(params.app-name) -cleanBuild -trace -configuration . 
+        ls -lha

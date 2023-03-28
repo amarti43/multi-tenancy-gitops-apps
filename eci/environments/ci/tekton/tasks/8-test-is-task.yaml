@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: test-is
+spec:
+  params:
+    - name: oc-image
+      type: string
+      default: quay.io/openshift/origin-cli:latest
+      description: Bash Docker image needed to upload ACE BAR files
+    - name: app-name
+      type: string
+      description: BAR file name
+    - name: namespace
+      type: string
+      default: test
+      description: OpenShift namespace where the ACE Books application will be deployed to
+  steps:
+    - image: $(params.oc-image)
+      name: test-is
+      script: |
+        SERVER_NAME=`echo "$(params.app-name)" | tr '[:upper:]' '[:lower:]'`
+        HOSTNAME=$(oc get route -n $(params.namespace) ${SERVER_NAME}-http -ogo-template --template='{{.spec.host}}')
+        response=`curl -k --write-out '%{http_code}' --silent --output /dev/null http://${HOSTNAME}/api/v1/$SERVER_NAME`
+        if [[ $response -ne 200 ]]
+        then
+          echo "An error happened testing the application"
+          exit 1
+        else
+          curl -k --silent http://${HOSTNAME}/api/v1/$SERVER_NAME
+        fi

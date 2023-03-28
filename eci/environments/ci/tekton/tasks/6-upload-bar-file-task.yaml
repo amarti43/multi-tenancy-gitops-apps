@@ -1,0 +1,65 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: upload-bar-file
+spec:
+  params:
+    - name: build-id
+      type: string
+      description: Build ID
+    - name: bash-image
+      type: string
+      default: alpine/curl
+      description: Bash Docker image needed to upload ACE BAR files
+    - name: app-dir
+      type: string
+      description: ACE application project directory
+    - name: utils-dir
+      type: string
+      description: ACE Utils project directory
+    - name: app-name
+      type: string
+      description: BAR file name
+    - name: artifactory-repo
+      type: string
+      default: generic-local
+      description: Artifactory repository to store the BAR files
+    - name: artifactory-basepath
+      type: string
+      default: tekton
+      description: Artifactory repository basepath to store the BAR files
+    - name: oc-image
+      type: string
+      default: quay.io/openshift/origin-cli:latest
+      description: Bash Docker image needed to operate OpenShift
+    - name: artifactory-namespace
+      type: string
+      default: tools
+      description: OpenShift namespace where Artifactory is installed
+  workspaces:
+    - name: workspace
+  stepTemplate:
+    envFrom:
+      - secretRef:
+          name: artifactory-access
+  steps:
+    - image: $(params.bash-image)
+      name: upload-bar
+      workingDir: $(workspaces.workspace.path)
+      script: |
+        #!/bin/sh
+        set -x
+        cp -p $(params.utils-dir)/scripts/*.sh $(params.app-dir)
+        cd $(params.app-dir)
+        sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
+        sed -i -e "s@https://@@g" upload-barfile-to-artifactory.sh
+
+        echo "Calling upload-barfile-to-artifactory.sh ${ARTIFACTORY_URL}
+        $(params.artifactory-repo) $(params.artifactory-basepath)
+        $(params.app-name)_$(params.build-id).bar ${ARTIFACTORY_USER}
+        ${ARTIFACTORY_PASSWORD}"
+
+        ./upload-barfile-to-artifactory.sh ${ARTIFACTORY_URL}
+        $(params.artifactory-repo) $(params.artifactory-basepath)
+        $(params.app-name)_$(params.build-id).bar ${ARTIFACTORY_USER}
+        "${ARTIFACTORY_PASSWORD}"
