@@ -46,7 +46,7 @@ spec:
         set -x
         cp -p $(params.utils-dir)/scripts/*.sh $(params.app-dir)
         cd $(params.app-dir)
-        sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
+        # sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
         sed -i -e "s@https://@@g" upload-barfile-to-artifactory.sh
 
         ARTIFACTORY_USER=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_USER" --to=-`
