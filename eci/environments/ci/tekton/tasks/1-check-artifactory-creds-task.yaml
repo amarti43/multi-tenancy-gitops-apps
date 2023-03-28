@@ -25,11 +25,14 @@ spec:
       script: |
         echo "Check if bar-auth-config ACE Configuration exists"
         EXISTS=`oc get configuration.appconnect.ibm.com -n $(params.namespace) | grep bar-auth-config | wc -l`
+        echo "XXXXXXXXXXXXXXXXXXX"
         if [[ $EXISTS -eq 1 ]]
         then
+          ECHO "YYYYYYYYYYYYYYYYYYY"
           echo "bar-auth-config ACE Configuration exists"
           echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
         else
+          echo "ZZZZZZZZZZZZZZZ"
           echo "bar-auth-config ACE Configuration does not exists"
           # echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
           echo "Installing openssl"
