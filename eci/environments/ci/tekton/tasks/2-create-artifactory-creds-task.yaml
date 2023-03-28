@@ -25,7 +25,7 @@ spec:
         echo "openssl installed"
         
         echo "Getting CA certificate for Artifactory"
-        ARTIFACTORY_ENDPOINT=`oc get route artifactory -n $(artifactory-namespace) -o jsonpath='{.status.ingress[].host}'`
+        ARTIFACTORY_ENDPOINT=`oc get route artifactory -n $(params.artifactory-namespace) -o jsonpath='{.status.ingress[].host}'`
         # Get certificates from artifactory endpoint
         openssl s_client -showcerts -verify 5 -connect ${ARTIFACTORY_ENDPOINT}:443 < /dev/null | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/{ if(/BEGIN CERTIFICATE/){a++}; out="cert"a".pem"; print >out}'
         # Base64 encode CA certificate
@@ -45,7 +45,7 @@ spec:
         EOF
 
         # Create JSON file with Artifactory credentials and CA certificate
-        ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -D`
+        ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(params.artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -D`
         cat - > bar-auth.json << EOF
         {
           "authType":"BASIC_AUTH",
@@ -69,4 +69,4 @@ spec:
             secretName: bar-auth-secret
             type: barauth
 
-        oc get secret artifactory-access --namespace=$(artifactory-namespace) -o yaml | sed 's/namespace: .*/namespace: $(params.namespace)/' | oc apply -f -
+        oc get secret artifactory-access --namespace=$(params.artifactory-namespace) -o yaml | sed 's/namespace: .*/namespace: $(params.namespace)/' | oc apply -f -
