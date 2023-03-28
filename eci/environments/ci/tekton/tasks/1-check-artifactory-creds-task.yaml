@@ -16,18 +16,22 @@ spec:
       type: string
       default: tools
       description: OpenShift namespace where artifactory is deployed to
-  results:
-    - name: creds-exists
-      description: Whether Artifactory credentials exists or not
+  # results:
+  #   - name: creds-exists
+  #     description: Whether Artifactory credentials exists or not
+  workspaces:
+    - name: workspace
   steps:
     - image: $(params.oc-image)
       name: create-artifactory-creds
+      workingDir: $(workspaces.workspace.path)
       script: |
         echo "Check if bar-auth-config ACE Configuration exists"
         EXISTS=`oc get configuration.appconnect.ibm.com -n $(params.namespace) | grep bar-auth-config | wc -l`
         if [[ $EXISTS -eq 1 ]]
         then
           echo "bar-auth-config ACE Configuration exists"
+          oc extract secret/artifactory-access -n $(params.artifactory-namespace)
           echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
         else
           echo "bar-auth-config ACE Configuration does not exists"
@@ -57,8 +61,9 @@ spec:
         EOF
         
           # Create JSON file with Artifactory credentials and CA certificate
-          # ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(params.artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -d`
-          ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
+          oc extract secret/artifactory-access -n $(params.artifactory-namespace)
+          # ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
+          ARTIFACTORY_PASSWORD=`cat ARTIFACTORY_PASSWORD`
 
           cat - > bar-auth.json << EOF
           {

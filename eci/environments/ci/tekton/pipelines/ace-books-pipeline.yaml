@@ -31,6 +31,9 @@ spec:
     - name: check-artifactory-creds
       taskRef:
         name: check-artifactory-creds
+      workspaces:
+        - name: workspace
+          workspace: shared-dir
       params:
         - name: namespace
           value: $(params.namespace)

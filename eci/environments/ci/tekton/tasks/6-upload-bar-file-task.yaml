@@ -7,10 +7,10 @@ spec:
     - name: build-id
       type: string
       description: Build ID
-    # - name: bash-image
-    #   type: string
-    #   default: alpine/curl
-    #   description: Bash Docker image needed to upload ACE BAR files
+    - name: bash-image
+      type: string
+      default: alpine/curl
+      description: Bash Docker image needed to upload ACE BAR files
     - name: app-dir
       type: string
       description: ACE application project directory
@@ -28,10 +28,10 @@ spec:
       type: string
       default: tekton
       description: Artifactory repository basepath to store the BAR files
-    - name: oc-image
-      type: string
-      default: quay.io/openshift/origin-cli:latest
-      description: Bash Docker image needed to operate OpenShift
+    # - name: oc-image
+    #   type: string
+    #   default: quay.io/openshift/origin-cli:latest
+    #   description: Bash Docker image needed to operate OpenShift
     - name: artifactory-namespace
       type: string
       default: tools
@@ -39,19 +39,21 @@ spec:
   workspaces:
     - name: workspace
   steps:
-    - image: $(params.oc-image)
+    - image: $(params.bash-image)
       name: upload-bar
       workingDir: $(workspaces.workspace.path)
       script: |
+        #!/bin/sh
         set -x
+        # dnf install perl-Digest-SHA -y
         cp -p $(params.utils-dir)/scripts/*.sh $(params.app-dir)
         cd $(params.app-dir)
-        # sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
+        sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
         sed -i -e "s@https://@@g" upload-barfile-to-artifactory.sh
 
-        ARTIFACTORY_USER=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_USER" --to=-`
-        ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
-        ARTIFACTORY_URL=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_URL" --to=-`
+        ARTIFACTORY_USER=`cat $(workspaces.workspace.path)/ARTIFACTORY_USER`
+        ARTIFACTORY_PASSWORD=`cat $(workspaces.workspace.path)/ARTIFACTORY_PASSWORD`
+        ARTIFACTORY_URL=`cat $(workspaces.workspace.path)/ARTIFACTORY_URL`
 
         echo "Calling upload-barfile-to-artifactory.sh ${ARTIFACTORY_URL}
         $(params.artifactory-repo) $(params.artifactory-basepath)
