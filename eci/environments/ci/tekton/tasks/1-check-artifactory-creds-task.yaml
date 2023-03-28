@@ -31,7 +31,61 @@ spec:
           echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
         else
           echo "bar-auth-config ACE Configuration does not exists"
-          echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
+          # echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
+          echo "Installing openssl"
+          dnf install openssl -y
+          echo "openssl installed"
+        
+          echo "Getting CA certificate for Artifactory"
+          ARTIFACTORY_ENDPOINT=`oc get route artifactory -n $(params.artifactory-namespace) -o jsonpath='{.status.ingress[].host}'`
+          # Get certificates from artifactory endpoint
+          openssl s_client -showcerts -verify 5 -connect ${ARTIFACTORY_ENDPOINT}:443 < /dev/null | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/{ if(/BEGIN CERTIFICATE/){a++}; out="cert"a".pem"; print >out}'
+          # Base64 encode CA certificate
+          CA_ENCODED=`cat cert1.pem | base64 -w0`
+          # Create the secret
+          cat <<EOF | oc apply -f -
+          kind: Secret
+          apiVersion: v1
+          metadata:
+            name: artifactory-cacert-secret
+            namespace: $(params.namespace)
+          data:
+            ca.crt: '${CA_ENCODED}'
+            tls.crt: ''
+            tls.key: ''
+          type: kubernetes.io/tls
+          EOF
+
+          # Create JSON file with Artifactory credentials and CA certificate
+          # ARTIFACTORY_PASSWORD=`oc get secret artifactory-access -n $(params.artifactory-namespace) -o jsonpath='{.data.ARTIFACTORY_PASSWORD}' | base64 -d`
+          ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
+
+          cat - > bar-auth.json << EOF
+          {
+            "authType":"BASIC_AUTH",
+            "credentials": {
+                "username":"admin",
+                "password":"${ARTIFACTORY_PASSWORD}",
+                "caCertSecret":"artifactory-cacert-secret"
+            }
+          }
+          EOF
+          # Create the secret containing the JSON
+          oc create secret generic bar-auth-secret --from-file=configuration=bar-auth.json --namespace=$(params.namespace)
+
+          cat <<EOF | oc apply -f -
+          apiVersion: appconnect.ibm.com/v1beta1
+          kind: Configuration
+          metadata:  
+            name: bar-auth-config  
+            namespace: $(params.namespace)
+          spec:  
+            description: Stores bar auth
+            secretName: bar-auth-secret
+            type: barauth
+          EOF
+
+          # oc get secret artifactory-access --namespace=$(params.artifactory-namespace) -o yaml | sed 's/namespace: .*/namespace: $(params.namespace)/' | oc apply -f -
         fi
         
         

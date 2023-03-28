@@ -7,10 +7,10 @@ spec:
     - name: build-id
       type: string
       description: Build ID
-    - name: bash-image
-      type: string
-      default: alpine/curl
-      description: Bash Docker image needed to upload ACE BAR files
+    # - name: bash-image
+    #   type: string
+    #   default: alpine/curl
+    #   description: Bash Docker image needed to upload ACE BAR files
     - name: app-dir
       type: string
       description: ACE application project directory
@@ -38,21 +38,25 @@ spec:
       description: OpenShift namespace where Artifactory is installed
   workspaces:
     - name: workspace
-  stepTemplate:
-    envFrom:
-      - secretRef:
-          name: artifactory-access
+  # stepTemplate:
+  #   envFrom:
+  #     - secretRef:
+  #         name: artifactory-access
   steps:
-    - image: $(params.bash-image)
+    - image: $(params.oc-image)
       name: upload-bar
       workingDir: $(workspaces.workspace.path)
       script: |
-        #!/bin/sh
+#       #!/bin/sh
         set -x
         cp -p $(params.utils-dir)/scripts/*.sh $(params.app-dir)
         cd $(params.app-dir)
         sed -i -e "s@#!/bin/bash@#!/bin/sh@g" upload-barfile-to-artifactory.sh
         sed -i -e "s@https://@@g" upload-barfile-to-artifactory.sh
+
+        ARTIFACTORY_USER=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_USER" --to=-`
+        ARTIFACTORY_PASSWORD=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_PASSWORD" --to=-`
+        ARTIFACTORY_URL=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_URL" --to=-`
 
         echo "Calling upload-barfile-to-artifactory.sh ${ARTIFACTORY_URL}
         $(params.artifactory-repo) $(params.artifactory-basepath)

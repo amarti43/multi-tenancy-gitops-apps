@@ -34,23 +34,23 @@ spec:
       params:
         - name: namespace
           value: $(params.namespace)
-    - name: create-artifactory-creds
-      taskRef:
-        name: create-artifactory-creds
-      runAfter:
-        - check-artifactory-creds
-      when:
-          - input: "$(tasks.check-artifactory-creds.results.creds-exists)"
-            operator: in
-            values: ["false"]
-      params:
-        - name: namespace
-          value: $(params.namespace)
+    # - name: create-artifactory-creds
+    #   taskRef:
+    #     name: create-artifactory-creds
+    #   runAfter:
+    #     - check-artifactory-creds
+    #   when:
+    #       - input: "$(tasks.check-artifactory-creds.results.creds-exists)"
+    #         operator: in
+    #         values: ["false"]
+    #   params:
+    #     - name: namespace
+    #       value: $(params.namespace)
     - name: generate-build-id
       taskRef:
         name: generate-build-id
       runAfter:
-        - create-artifactory-creds
+        - check-artifactory-creds
     - name: git-checkout-ace-books-app
       taskRef:
         name: git-checkout

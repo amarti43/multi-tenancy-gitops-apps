@@ -32,6 +32,10 @@ spec:
       type: string
       default: test
       description: OpenShift namespace where the ACE Books application will be deployed to
+    - name: artifactory-namespace
+      type: string
+      default: tools
+      description: OpenShift namespace where Artifactory is deployed to
     - name: configuration-list
       type: string
       default: ""
@@ -50,10 +54,10 @@ spec:
       description: ACE replicas
   workspaces:
     - name: workspace
-  stepTemplate:
-    envFrom:
-      - secretRef:
-          name: artifactory-access
+  # stepTemplate:
+  #   envFrom:
+  #     - secretRef:
+  #         name: artifactory-access
   steps:
     - image: $(params.oc-image)
       name: deploy-is
@@ -62,6 +66,7 @@ spec:
         set -e
         cp -p $(params.utils-dir)/templates/integration-server.yaml.tmpl $(params.app-dir)
         cd $(params.app-dir)
+        ARTIFACTORY_URL=`oc extract secret/artifactory-access -n $(params.artifactory-namespace) --keys="ARTIFACTORY_URL" --to=-`
         BAR_FILE="$(params.app-name)_$(params.build-id).bar"
         sed -i -e "s@https://{{ARTIFACTORY_HOST}}:{{ARTIFACTORY_PORT}}@{{ARTIFACTORY_URL}}@g" integration-server.yaml.tmpl
         SERVER_NAME=`echo "$(params.app-name)" | tr '[:upper:]' '[:lower:]'`

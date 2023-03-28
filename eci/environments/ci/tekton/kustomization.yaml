@@ -4,7 +4,7 @@ resources:
 
 # ECI Tasks
 - tasks/1-check-artifactory-creds-task.yaml
-- tasks/2-create-artifactory-creds-task.yaml
+# - tasks/2-create-artifactory-creds-task.yaml
 - tasks/3-generate-build-id-task.yaml
 - tasks/4-git-checkout-task.yaml
 - tasks/5-build-bar-file-task.yaml
