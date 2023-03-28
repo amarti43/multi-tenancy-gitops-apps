@@ -24,8 +24,8 @@ spec:
       name: create-artifactory-creds
       script: |
         echo "Check if bar-auth-config ACE Configuration exists"
-        oc get configuration.appconnect.ibm.com bar-auth-config -n $(params.namespace)
-        if [[ $? -eq 0 ]]
+        EXISTS=`oc get configuration.appconnect.ibm.com -n $(params.namespace) | grep bar-auth-config | wc -l`
+        if [[ $EXISTS -eq 1 ]]
         then
           echo "bar-auth-config ACE Configuration exists"
           echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
