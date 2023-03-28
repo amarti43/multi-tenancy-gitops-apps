@@ -33,11 +33,11 @@ spec:
           echo "true" | tr -d "\n" | tee $(results.creds-exists.path)
         else
           echo "ZZZZZZZZZZZZZZZ"
-          # echo "bar-auth-config ACE Configuration does not exists"
-          # # echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
-          # echo "Installing openssl"
-          # dnf install openssl -y
-          # echo "openssl installed"
+          echo "bar-auth-config ACE Configuration does not exists"
+          # echo "false" | tr -d "\n" | tee $(results.creds-exists.path)
+          echo "Installing openssl"
+          dnf install openssl -y
+          echo "openssl installed"
         
           # echo "Getting CA certificate for Artifactory"
           # ARTIFACTORY_ENDPOINT=`oc get route artifactory -n $(params.artifactory-namespace) -o jsonpath='{.status.ingress[].host}'`
