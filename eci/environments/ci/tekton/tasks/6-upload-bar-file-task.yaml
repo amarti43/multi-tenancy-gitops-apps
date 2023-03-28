@@ -43,7 +43,6 @@ spec:
       name: upload-bar
       workingDir: $(workspaces.workspace.path)
       script: |
-#       #!/bin/sh
         set -x
         cp -p $(params.utils-dir)/scripts/*.sh $(params.app-dir)
         cd $(params.app-dir)
