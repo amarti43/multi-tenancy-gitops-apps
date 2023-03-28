@@ -84,8 +84,6 @@ spec:
             secretName: bar-auth-secret
             type: barauth
           EOF
-
-          # oc get secret artifactory-access --namespace=$(params.artifactory-namespace) -o yaml | sed 's/namespace: .*/namespace: $(params.namespace)/' | oc apply -f -
         fi
         
         
