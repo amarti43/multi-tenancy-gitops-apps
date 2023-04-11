@@ -9,7 +9,7 @@ spec:
       description: Build ID
     - name: ace-image
       type: string
-      default: image-registry.openshift-image-registry.svc:5000/jenkins/ace-buildbar:12.0.4.0-ubuntu
+      default: image-registry.openshift-image-registry.svc:5000/ci/ace-buildbar:12.0.4.0-ubuntu
       description: ACE Docker image needed to build ACE BAR files
     - name: app-name
       type: string
