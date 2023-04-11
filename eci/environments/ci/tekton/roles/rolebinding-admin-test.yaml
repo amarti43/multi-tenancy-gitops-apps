@@ -1,8 +1,10 @@
+# This RoleBinding is just for reference.
+# The actual RoleBinding is created along with the ace-tekton namespace at the infra layer.
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: custom-eci-tekton-admin
-  namespace: test
+  namespace: ace-tekton
 subjects:
   - kind: ServiceAccount
     name: pipeline

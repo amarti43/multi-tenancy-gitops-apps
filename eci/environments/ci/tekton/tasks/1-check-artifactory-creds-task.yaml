@@ -10,7 +10,7 @@ spec:
       description: OC CLI Docker image needed to upload ACE BAR files
     - name: namespace
       type: string
-      default: test
+      default: ace-tekton
       description: OpenShift namespace where the ACE Books application will be deployed to
     - name: artifactory-namespace
       type: string

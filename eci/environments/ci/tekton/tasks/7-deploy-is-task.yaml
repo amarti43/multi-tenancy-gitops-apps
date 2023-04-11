@@ -30,7 +30,7 @@ spec:
       description: Artifactory repository basepath to store the BAR files
     - name: namespace
       type: string
-      default: test
+      default: ace-tekton
       description: OpenShift namespace where the ACE Books application will be deployed to
     - name: artifactory-namespace
       type: string

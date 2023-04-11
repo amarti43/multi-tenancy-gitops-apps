@@ -18,7 +18,7 @@ spec:
       description: Application name
     - name: namespace
       type: string
-      default: "test"
+      default: "ace-tekton"
       description: OpenShift namespace where the ACE Books application will be deployed to
     - name: debug
       type: string
