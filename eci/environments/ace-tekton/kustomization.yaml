@@ -1,0 +1,3 @@
+resources:
+# ACE Dashboard
+- ace/dashboard/dashboard.yaml
