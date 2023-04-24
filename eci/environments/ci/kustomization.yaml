@@ -1,0 +1,18 @@
+resources:
+# ECI Pipelines
+- tekton/pipelines/ace-books-pipeline.yaml
+
+# ECI Tasks
+- tekton/tasks/1-check-artifactory-creds-task.yaml
+# - tasks/2-create-artifactory-creds-task.yaml
+- tekton/tasks/3-generate-build-id-task.yaml
+- tekton/tasks/4-git-checkout-task.yaml
+- tekton/tasks/5-build-bar-file-task.yaml
+- tekton/tasks/6-upload-bar-file-task.yaml
+- tekton/tasks/7-deploy-is-task.yaml
+- tekton/tasks/8-test-is-task.yaml
+
+# ECI Tekton Pipeline Role and Rolebinding
+# to be able to list services and routes in tools namespace
+- tekton/roles/role.yaml
+- tekton/roles/rolebinding.yaml

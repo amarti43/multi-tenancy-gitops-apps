@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: eci-tekton-ci
+  name: eci-ci
   annotations:
     argocd.argoproj.io/sync-wave: "300"
   finalizers:
@@ -12,7 +12,7 @@ spec:
     server: https://kubernetes.default.svc
   project: applications
   source:
-    path: eci/environments/ci/tekton
+    path: eci/environments/ci
     repoURL: https://github.com/eci-cicd/multi-tenancy-gitops-apps.git
     targetRevision: master
   syncPolicy:
