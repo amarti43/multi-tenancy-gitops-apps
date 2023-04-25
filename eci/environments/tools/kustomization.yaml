@@ -2,4 +2,4 @@ resources:
 # ACE Dashboard
 - ace/dashboard/dashboard.yaml
 # ACE Integration Server
-#- ace/integration-servers/books-is.yaml
+- ace/integration-servers/books-is.yaml
