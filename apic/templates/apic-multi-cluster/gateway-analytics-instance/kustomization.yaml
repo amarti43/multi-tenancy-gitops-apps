@@ -40,7 +40,7 @@ patches:
   patch: |-
     - op: add
       path: /spec/source/repoURL
-      value: https://github.com/eci-cicd/multi-tenancy-gitops-services.git
+      value: https://github.com/sepe/multi-tenancy-gitops-services.git
     - op: add
       path: /spec/source/targetRevision
       value: master
