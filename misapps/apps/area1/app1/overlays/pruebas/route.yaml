@@ -1,0 +1,13 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: app1-route
+spec:
+  host: app1-pruebas.apps.ocp.local
+  to:
+    kind: Service
+    name: app1-service-pruebas
+    weight: 100
+  port:
+    targetPort: 8080
+  wildcardPolicy: None

@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../..//apps/area1/app1/overlays/desarrollo
+#- ../../../apps/sample-app/overlays/dev
+#- ../../../apps/websphereliberty-app-sample/overlays/dev
+#- ../../../apps/helm-example/application.yaml
+
+patches:
+  - path: add-license.patch.yaml
+    target:
+      labelSelector: "liberty=true"
+
+commonAnnotations:
+  configVersion: "2.0"

@@ -1,0 +1,11 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-deployment
+spec:
+  replicas: 2
+  template:
+    spec:
+      containers:
+      - name: app1-container
+        image: quay.io/amarti43_lord/demos/nginx-hola-mundo:v2

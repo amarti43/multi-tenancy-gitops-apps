@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../base
+
+replicas:
+- name: was-sample-app
+  count: 2
+
+namespace: staging
+
+commonLabels:
+  app.kubernetes.io/instance: was-sample-app-staging
+  app.kubernetes.io/managed-by: argocd-staging-apps
+  app.kubernetes.io/part-of: was-sample-app

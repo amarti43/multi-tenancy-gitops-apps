@@ -1,0 +1,17 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: was-sample-app
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/name: was-sample-app
+spec:
+  to:
+    kind: Service
+    name: was-sample-app
+    weight: 100
+  port:
+    targetPort: 9080-tcp
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Allow

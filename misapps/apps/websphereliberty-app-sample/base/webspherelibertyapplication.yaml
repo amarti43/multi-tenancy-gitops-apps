@@ -1,0 +1,19 @@
+apiVersion: liberty.websphere.ibm.com/v1
+kind: WebSphereLibertyApplication
+metadata:
+  name: websphereliberty-app-sample
+spec:
+  applicationImage: >-
+    icr.io/appcafe/open-liberty/samples/getting-started@sha256:e22dd56a05e44618a10d275d3ff07a38eb364c0f04f86ffe9618d83dd5467860
+  applicationName: websphereliberty-app-sample
+  expose: true
+  license:
+    accept: true
+    edition: IBM WebSphere Application Server
+    productEntitlementSource: Standalone
+  manageTLS: true
+  pullPolicy: IfNotPresent
+  resources: {}
+  service:
+    port: 9443
+    type: ClusterIP

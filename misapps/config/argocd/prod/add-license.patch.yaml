@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: name-not-used
+  annotations:    
+    cloudpakName: "IBM Cloud Pak for Applications"
+    cloudpakId: "4df52d2cdc374ba09f631a650ad2b5bf"
+    productCloudpakRatio: "8:1"
+    productID: "87f3487c22f34742a799164f3f3ffa78"
+    productName: "IBM WebSphere Application Server Liberty Core"
+    productMetric: "VIRTUAL_PROCESSOR_CORE"
+    productChargedContainers: "All"
