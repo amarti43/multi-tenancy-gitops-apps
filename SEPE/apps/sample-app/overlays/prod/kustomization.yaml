@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../base
+
+replicas:
+- name: was-sample-app
+  count: 2
+
+namespace: prod
+
+commonLabels:
+  app.kubernetes.io/instance: was-sample-app-prod
+  app.kubernetes.io/managed-by: argocd-prod-apps
+  app.kubernetes.io/part-of: was-sample-app

@@ -1,0 +1,44 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: was-sample-app
+  annotations: {}
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/name: was-sample-app
+    liberty: true
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: was-sample-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/component: backend
+        app.kubernetes.io/name: was-sample-app
+    spec:
+      containers:
+        - name: app
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: WLP_LOGGING_CONSOLE_LOGLEVEL
+              value: info
+            - name: WLP_LOGGING_CONSOLE_SOURCE
+              value: 'message,accessLog,ffdc,audit'
+            - name: WLP_LOGGING_CONSOLE_FORMAT
+              value: json
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+          ports:
+            - name: 9443-tcp
+              containerPort: 9443
+              protocol: TCP
+          image: >-
+            icr.io/appcafe/open-liberty/samples/getting-started@sha256:e22dd56a05e44618a10d275d3ff07a38eb364c0f04f86ffe9618d83dd5467860

@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: was-liberty-hello-world-helm
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: applications
+  source:
+    chart: was-liberty-hello-world
+    repoURL: https://jesusmah.github.io/helm-chart-repo
+    targetRevision: 4.0.0
+    helm:
+      releaseName: hello-world-helm
+      values: |
+        lastConfigLoaded: chemi
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

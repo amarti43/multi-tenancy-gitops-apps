@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ./overlays/dev
+
+commonLabels:
+  app.kubernetes.io/managed-by: none
+
+commonAnnotations:    
+  cloudpakName: "IBM Cloud Pak for Applications"
+  cloudpakId: "4df52d2cdc374ba09f631a650ad2b5bf"
+  productCloudpakRatio: "4:1"
+  productID: "87f3487c22f34742a799164f3f3ffa78"
+  productName: "IBM WebSphere Application Server Liberty Core"
+  productMetric: "VIRTUAL_PROCESSOR_CORE"
+  productChargedContainers: "All"
