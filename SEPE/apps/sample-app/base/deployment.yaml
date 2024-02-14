@@ -41,4 +41,4 @@ spec:
               containerPort: 9443
               protocol: TCP
           image: >-
-            icr.io/appcafe/open-liberty/samples/getting-started@sha256:e22dd56a05e44618a10d275d3ff07a38eb364c0f04f86ffe9618d83dd5467860
+            quay.io/amarti43_lord/demos/nginx-hola-mundo:latest
