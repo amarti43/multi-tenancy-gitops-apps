@@ -41,4 +41,4 @@ spec:
               containerPort: 9443
               protocol: TCP
           image: >-
-            icr.io/appcafe/open-liberty:kernel-slim-java11-openj9-ubi
+            quay.io/amarti43_lord/demos/nginx-hola-mundo:latest
