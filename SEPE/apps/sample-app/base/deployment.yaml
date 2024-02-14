@@ -6,7 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/component: backend
     app.kubernetes.io/name: was-sample-app
-    liberty: "true"
 spec:
   replicas: 1
   selector:
